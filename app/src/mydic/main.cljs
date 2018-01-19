@@ -26,7 +26,7 @@
 
 (defn -main []
   (.on app "ready" (fn []
-                     (println "Workthrough")
+                     (println "FUCK YOU ELECTRON")
                      (create-window)))
 
   (.on app "window-all-closed"
@@ -38,3 +38,4 @@
 (nodejs/enable-util-print!)
 (.log js/console "App has started!")
 (set! *main-cli-fn* -main)
+
