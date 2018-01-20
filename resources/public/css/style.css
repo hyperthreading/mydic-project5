@@ -1,2 +1,30 @@
 /* some style */
 
+input.search-and-command {
+    width: 100%;
+}
+
+.word-history {
+    display: inline-block;
+    width: 13%;
+    height: 100%;
+
+    padding-left: 0;
+    list-style: none;
+}
+
+.word-history-word {
+    padding: 10px;
+
+    border-style: solid;
+    border-color: 
+}
+
+.word-definition {
+    display: inline-block;
+    width: 80%;
+    height: 100%;
+
+    vertical-align: top;
+    padding-left: 10px;
+}
