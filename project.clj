@@ -11,7 +11,8 @@
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]
                                   [figwheel-sidecar "0.5.14"]
-                                  [com.cemerick/piggieback "0.2.2"]]
+                                  [com.cemerick/piggieback "0.2.2"]
+                                  [proto-repl "0.3.1"]]
                    ;; need to add dev source path here to get user.clj loaded
                    :source-paths ["app/src" "renderer/src" "dev"]
                    ;; for CIDER
@@ -23,7 +24,7 @@
 
   :figwheel {:server-port 3450
              :css-dirs ["resources/public/css"]}
-  
+
   :cljsbuild {:builds [{:id "main-dev"
                         :source-paths ["app/src"]
                         :incremental true
@@ -34,8 +35,8 @@
                                    :main mydic.main
                                    :target :nodejs
                                    :optimizations :none
-                                   :source-map true
-                                   }}
+                                   :source-map true}}
+
                        {:id "renderer-dev"
                         :source-paths ["renderer/src"]
                         :figwheel true
@@ -46,6 +47,4 @@
                                    :source-map-timestamp true
                                    ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
                                    ;; https://github.com/binaryage/cljs-devtools
-                                   :preloads [devtools.preload]}
-                        }]})
-
+                                   :preloads [devtools.preload]}}]})
