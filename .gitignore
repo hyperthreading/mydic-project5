@@ -3,3 +3,5 @@ node_modules/
 resources/out/
 resources/public/js/
 target/
+/.lein-repl-history
+/.nrepl-port

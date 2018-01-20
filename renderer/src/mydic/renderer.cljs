@@ -4,4 +4,5 @@
   (println "reloaded!"))
 
 (let [elem (.getElementById js/document "app")]
-  (set! (.-innerHTML elem) "Hello, World!"))
+  (set! (.-innerHTML elem) "Hello, Cider!"))
+
