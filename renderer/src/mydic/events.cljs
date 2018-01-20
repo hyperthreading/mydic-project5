@@ -13,6 +13,7 @@
                 (-> word-search
                     (assoc :word word)
                     (assoc :type type)
+                    (assoc :timestamp timestamp)
                     (cond-> add-to-history
                       (update :word-history
                               #(conj % {:word word

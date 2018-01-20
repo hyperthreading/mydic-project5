@@ -50,6 +50,10 @@ input.search-and-command {
     background-color: #e2e6ea;
 }
 
+.word-selected {
+    background-color: #81beff;
+}
+
 .word-definition {
     display: inline-block;
     width: 77%;

@@ -15,16 +15,19 @@
     :placeholder "search words or commands you want to execute"}])
 
 (defn word-history []
-  (let [word-hist @(rf/subscribe [:word-search/word-history])]
+  (let [word-hist @(rf/subscribe [:word-search/word-history])
+        word-sel @(rf/subscribe [:word-search/timestamp])]
     [:div.word-history
      [:ul.word-history-list
       (for [{:keys [word timestamp]} word-hist]
         ^{:key timestamp} [:li.btn.word-history-word
-                           {:on-click #(rf/dispatch
+                           {:class (if (= timestamp word-sel)
+                                     "word-selected")
+                            :on-click #(rf/dispatch
                                         [:word-search/find-word-in-history
                                          word
                                          :definition
-                                         (.getTime (js/Date.))])}
+                                         timestamp])}
                            word])]]))
 
 (defn word-definition []

@@ -10,11 +10,12 @@
 (def word-history
   (gen-word))
 
-(defonce default-db
+(def default-db
   {:route    {:window  nil
               :content :word-search}
    :contents {:word-search {:word-history
                             word-history
                             :type :definition
-                            :word "computer"}}
+                            :word "computer"
+                            :timestamp 0}}
    :search-and-command {:text ""}})
