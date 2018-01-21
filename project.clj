@@ -7,9 +7,11 @@
                  [org.clojure/clojurescript "1.9.946"]
                  [re-frame "0.10.3-rc2"]]
   :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-figwheel "0.5.14"]]
+            [lein-figwheel "0.5.14"]
+            [lein-garden "0.3.0"]]
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.9"]
+                                  [garden "1.3.3"]
                                   [figwheel-sidecar "0.5.14"]
                                   [com.cemerick/piggieback "0.2.2"]
                                   [proto-repl "0.3.1"]]
@@ -22,6 +24,11 @@
                                                      "resources/out"
                                                      :target-path]}}
 
+  :garden
+  {:builds [{:source-paths ["renderer/src"]
+             :stylesheet mydic.styles.core/main-css
+             :compiler {:output-to "resources/public/css/style.css"}}]}
+  
   :figwheel {:server-port 3450
              :css-dirs ["resources/public/css"]}
 
@@ -39,7 +46,10 @@
 
                        {:id "renderer-dev"
                         :source-paths ["renderer/src"]
-                        :figwheel true
+
+                        :figwheel
+                        {:on-jsload "mydic.renderer/on-reload"}
+                        
                         :compiler {:main mydic.renderer
                                    :asset-path "js/compiled/out"
                                    :output-to "resources/public/js/compiled/renderer.js"

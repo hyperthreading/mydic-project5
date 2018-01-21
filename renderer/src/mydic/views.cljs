@@ -17,7 +17,7 @@
 (defn word-history []
   (let [word-hist @(rf/subscribe [:word-search/word-history])
         word-sel @(rf/subscribe [:word-search/timestamp])]
-    [:div.word-history
+    [:div.word-history-container
      [:ul.word-history-list
       (for [{:keys [word timestamp]} word-hist]
         ^{:key timestamp} [:li.btn.word-history-word

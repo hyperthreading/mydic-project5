@@ -10,5 +10,8 @@
 (defn autobuild [& ids]
   (apply fg/start-autobuild ids))
 
-(defn cljs []
-  (fg/cljs-repl))
+(defn cljs
+  ([]
+   (fg/cljs-repl))
+  ([repl-name]
+   (fg/cljs-repl repl-name)))

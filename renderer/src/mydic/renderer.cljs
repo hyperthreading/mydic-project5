@@ -20,7 +20,11 @@
   (mount))
 
 (defn ^:export on-reload []
+  (mount)
   (println "reloaded!"))
 
 ;; to refresh every component in reagent
-(mount)
+(defonce initialize-db
+  (run))
+
+(enable-console-print!)
