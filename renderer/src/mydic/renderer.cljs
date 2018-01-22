@@ -3,6 +3,7 @@
             [mydic.db]
             [mydic.events]
             [mydic.subs]
+            [mydic.ipc-renderer]
             [reagent.core :as reagent]
             [re-frame.core :as rf]
             [re-frame.db :as rfdb]))

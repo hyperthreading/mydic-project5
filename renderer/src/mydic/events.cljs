@@ -6,6 +6,7 @@
  :init
  (fn [_ _] mydb/default-db))
 
+"Find word with specified result type (:word-definition)"
 (defn find-word [add-to-history]
   (fn [db [_ word type timestamp]]
    (update-in db [:contents :word-search]
