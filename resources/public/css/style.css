@@ -53,10 +53,64 @@ input.search-and-command {
 }
 
 .word-definition {
-  display: inline-block;
   width: 77%;
+  right: 0;
+  top: 30px;
+  height: 90%;
+  overflow-y: scroll;
+  position: absolute;
+  display: inline-block;
+  list-style: none;
+  left: 23%;
+}
+
+.kr-mean {
+  font-size: 30px;
+  word-break: break-all;
+}
+
+.kr-mean:before {
+  border-top-width: 3px;
+  border-top-style: solid;
+  border-top-color: rgb(63, 135, 166);
+  content: "";
+  display: block;
+  width: 100%;
+  block-size: 10px;
+}
+
+.en-mean {
+  word-break: break-all;
+}
+
+.en-mean:before {
+  border-top-width: 3px;
+  border-top-style: solid;
+  border-top-color: rgb(63, 135, 166);
+  content: "";
+  display: block;
+  width: 100%;
+  block-size: 10px;
+}
+
+.ex-sen {
+  word-break: break-all;
+}
+
+.ex-sen:before {
+  border-top-width: 3px;
+  border-top-style: solid;
+  border-top-color: rgb(63, 135, 166);
+  content: "";
+  display: block;
+  width: 100%;
+  block-size: 10px;
+}
+
+.ex-sen-list {
   height: 100%;
-  margin-left: 20%;
-  padding: 8px;
-  vertical-align: top;
+  font-size: 20px;
+  list-style-type: upper-roman;
+  list-style-position: initial;
+  list-style-image: initial;
 }

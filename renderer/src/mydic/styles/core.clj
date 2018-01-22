@@ -2,7 +2,7 @@
   (:require [garden.core :as g :refer [css]]
             [garden.units :as u :refer [percent px]]
             [garden.selectors :as s]))
-            
+
 
 (def dark-grey "#212529")
 (def light-blue "#e2e6ea")
@@ -42,7 +42,7 @@
    ; Use string literal to avoid token error
    [".word-history-list::-webkit-scrollbar"
     {:display "none"}]
-   
+
    [:.word-history-word
     {:padding "10px"
      :border-bottom "1px solid #ededed"
@@ -61,8 +61,55 @@
    [:.word-definition
     {:display "inline-block"
      :width "77%"
-     :height "100%"
-     :margin-left word-history-width
-     :padding "8px"
-     :vertical-align "top"}]))
+     :height "90%"
+     :position "absolute"
+     :right 0
+     :top (px 30)
+     :left "23%"
+     :list-style "none"
+     :overflow-y "scroll"}]
 
+   [:.kr-mean
+    [:&:before
+     {:border-top-width (px 3)
+      :border-top-style "solid"
+      :border-top-color "rgb(63, 135, 166)"
+      :content "\"\""
+      :display "block"
+      :width "100%"
+      :block-size (px 10)}]
+
+    {:font-size (px 30)
+     :word-break "break-all"}]
+
+
+
+
+   [:.en-mean
+    [:&:before
+     {:border-top-width (px 3)
+      :border-top-style "solid"
+      :border-top-color "rgb(63, 135, 166)"
+      :content "\"\""
+      :display "block"
+      :width "100%"
+      :block-size (px 10)}]
+    { :word-break "break-all"}]
+
+   [:.ex-sen
+    [:&:before
+     {:border-top-width (px 3)
+      :border-top-style "solid"
+      :border-top-color "rgb(63, 135, 166)"
+      :content "\"\""
+      :display "block"
+      :width "100%"
+      :block-size (px 10)}]
+    {:word-break "break-all"}]
+
+   [:.ex-sen-list
+    {:height "100%"
+     :font-size "20px"
+     :list-style-type "upper-roman"
+     :list-style-position "initial"
+     :list-style-image "initial"}]))

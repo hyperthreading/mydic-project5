@@ -2,8 +2,8 @@
   (:require [re-frame.core :as rf]))
 
 (defn command-completion []
-  "Add completion to search-and-command component"
-  )
+  "Add completion to search-and-command component")
+
 
 (defn search-and-command []
   "User can search words and execute command"
@@ -30,9 +30,42 @@
                                          timestamp])}
                            word])]]))
 
+(defn kr-mean[word]
+  [:div.kr-mean
+   [:p {:style {:fontSize "29px"}} word]])
+
+(defn en-mean[word]
+  [:div.en-mean
+   [:p {:style {:fontSize "25px"}} word]])
+
+(def ex-sentences
+  ["1st example sentances",
+   "2nd example sentances",
+   "3rd example sentances",
+   "4th example sentances",
+   "5th example sentances",
+   "6th example sentances",
+   "7th example sentances",
+   "8th example sentances",
+   "9th example sentances",
+   "10th example sentances",
+   "11th example sentances",
+   "12th example sentances",])
+
+(defn ex-sen[sen]
+  [:div.ex-sen
+   [:ul.ex-sen-list
+    (for [sentence sen]
+      [:li sentence])]])
+
+
 (defn word-definition []
   (let [aword @(rf/subscribe [:word-search/word])]
-    [:div.word-definition "I really need to find " [:strong aword]]))
+    [:div.word-definition
+     [:strong {:style {:fontSize "70px" :color "#0000cd"} } aword]
+     [kr-mean "한글 뜻!"]
+     [en-mean "english mean"]
+     [ex-sen ex-sentences]]))
 
 (defn word-search []
   [:div.word-search
