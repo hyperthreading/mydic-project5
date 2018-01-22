@@ -37,7 +37,7 @@
                    (.-webContents)
                    (.send "find-word" (.readText clipboard)))
                (println (.readText clipboard))
-               (.focus @*win*))))
+               (.show @*win*))))
                
 
 (defn unregister-global-shortcut []
