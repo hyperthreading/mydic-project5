@@ -69,6 +69,23 @@
      :list-style "none"
      :overflow-y "scroll"}]
 
+   [".word-definition::-webkit-scrollbar"
+    {:width "12px"}]
+
+   [".word-definition::-webkit-scrollbar-track"
+    {:-webkit-border-radius "10px"
+     :border-radius "10px"}]
+
+   [".word-definition::-webkit-scrollbar-thumb"
+    {:-webkit-border-radius "10px"
+     :border-radius "10px"
+     :background "rgba(0x60, 0x60, 0x60, 0.8)"
+     :-webkit-box-shadow "inset 0 0 6px rgba(0,0,0,0.3)"}]
+
+   [".word-definition::-webkit-scrollbar-thumb:window-inactive"
+    {:background "rgba(0x60, 0x60, 0x60, 0.4)"}]
+
+
    [:.kr-mean
     [:&:before
      {:border-top-width (px 3)
