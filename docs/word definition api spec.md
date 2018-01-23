@@ -27,8 +27,8 @@ API로 이용할 수 있는 기능을 정의합니다
 
 ```clojure
 {:query "commun"
- :completion [{:word "commune"
-               :definition "123123"}]}
+ :list  [{:word "commune"
+          :definition "123123"}]}
 ```
 
 ### word-link
