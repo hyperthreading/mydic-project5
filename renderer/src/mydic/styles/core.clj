@@ -53,7 +53,11 @@
                :background-color light-blue}]
 
     ;:.word-list-item.word-selected:hover
-    [:&.word-selected:hover {:background-color dark-blue}]]
+    [:&.word-selected:hover {:background-color dark-blue}]
+
+    [:.word-small-definition
+     {:font-size "smaller"
+      :word-break "break-word"}]]
 
    [:.word-selected
     {:background-color sky-blue}]

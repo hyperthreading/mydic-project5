@@ -38,7 +38,9 @@
                          :history    history
                          :result     result
                          :completion completion)]
-        (for [{:keys [word id]} word-links]
+        (for [{:keys [word
+                      id
+                      definition]} word-links]
           ^{:key id} [:li.btn.word-list-item
                       {:class    (if (= id selected)
                                    "word-selected")
@@ -47,7 +49,11 @@
                                     word
                                     :definition
                                     id])}
-                      word]))]]))
+                      word
+                      (if definition
+                        (list [:br]
+                              [:span.word-small-definition
+                               definition]))]))]]))
 
 (defn kr-mean [word]
   [:div.kr-mean

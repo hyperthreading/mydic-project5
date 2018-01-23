@@ -48,6 +48,11 @@ input.search-and-command {
   background-color: #4198f6;
 }
 
+.word-list-item .word-small-definition {
+  font-size: smaller;
+  word-break: break-word;
+}
+
 .word-selected {
   background-color: #81beff;
 }
