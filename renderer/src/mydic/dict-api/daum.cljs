@@ -2,7 +2,7 @@
   (:require [hickory.core :as h]
             [hickory.select :as s]
             [clojure.string :as string]
-            [clojure.core.async :as async]
+            [clojure.core.async :as async :refer [go >! <! close!]]
             [goog.string :as gstring]
             [goog.string.format]))
 
@@ -21,6 +21,15 @@
    :definition true
    :usage true
    :related true})
+
+(defn async-fetch
+  [url]
+  (let [ch (async/chan)]
+    (-> (fetch url)
+        (.then #(.text %))
+        (.then #(go (>! ch %)
+                    (close! ch))))
+    ch))
 
 (defn api-capability []
   caps)
@@ -44,11 +53,73 @@
 
 (defn word-completion
   [prefix]
-  (let [ch (async/chan)]
-    (-> (fetch (gstring/format (:completion/general urls) prefix))
-        (.then #(.text %))
-        (.then #(async/go (async/>! ch (parse-completion %))
-                          (async/close! ch))))
+  (let [ch (async/chan)
+        url (gstring/format (:completion/general urls) prefix)]
+    (go (->> (async-fetch url)
+             <!
+             parse-completion
+             (>! ch))
+        (close! ch))
+    ch))
+
+(defn word-search
+  [])
+
+(def word-selector-in-result
+  (s/and (s/tag :div)
+         (s/class :search_type)))
+"word def selector: div.search_type span.txt_search"
+(def word-def-selector-in-result
+  (s/and (s/tag :span)
+         (s/class :txt_search)))
+
+"word link selector: div.search_type a.txt_searchword"
+(def word-link-selector
+  (s/class :txt_searchword))
+
+(defn word-id-from-url
+  [url]
+  (last (re-find #"wordid=([\w\d]+)" url)))
+
+(defn extract-content
+  "It'll try to extract and leave only content from hickory HTML format"
+  [element]
+  (if (map? element)
+    (map extract-content (:content element))
+    element))
+
+(defn word-links-from-search
+  [html]
+  (let [words (->> html h/parse h/as-hickory (s/select word-selector-in-result))]
+    (map (fn [word]
+           (let [title       (first (s/select word-link-selector word))
+                 definitions (s/select word-def-selector-in-result word)]
+             {:word (->> (:content title)
+                         (map extract-content)
+                         flatten
+                         string/join)
+              :id   (->  title
+                         :attrs
+                         :href
+                         word-id-from-url)
+              :definition (->> definitions
+                               (map (comp string/join flatten extract-content))
+                               (interpose ", ")
+                               string/join)}))
+         words)))
+
+(defn word-detailed-search
+  "Types are `:definition` `:usage` `:idioms`"
+  [query type]
+  (let [ch   (async/chan)
+        page 1
+        url  (gstring/format (:search/word urls) query page)]
+    (go (>! ch
+            {:query  query
+             :type   type
+             :result (word-links-from-search (<! (async-fetch url)))
+             :page   page})
+        (close! ch))
     ch))
 
 (defn word-summary

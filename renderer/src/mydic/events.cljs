@@ -28,21 +28,42 @@
  :word-search/select-word-in-history
  (select-word false))
 
+(def word-list-path
+  [:contents :word-search :list])
+
 (rf/reg-event-db
  :word-search.list/on-mode-change
  (fn [db [_ mode]]
-   (assoc-in db [:contents :word-search :list :mode]
+   (assoc-in db [:mode]
              mode)))
+
+(rf/reg-event-db
+ :word-search/start-completion
+ (fn [db _]
+   (assoc-in db
+             (conj word-list-path :mode)
+             :completion)))
 
 (rf/reg-event-db
  :word-search/on-completion
  (fn [db [_ comp-list]]
-   (update-in db
-              [:contents :word-search :list]
-              (fn [list-db]
-                (-> list-db
-                    (assoc-in [:completion] comp-list)
-                    (assoc-in [:mode] :completion))))))
+   (assoc-in db
+             (conj word-list-path :completion)
+             comp-list)))
+
+(rf/reg-event-db
+ :word-search/start-search
+ (fn [db _]
+   (assoc-in db
+             (conj word-list-path :mode)
+             :result)))
+
+(rf/reg-event-db
+ :word-search/on-search-result
+ (fn [db [_ result]]
+   (assoc-in db
+             (conj word-list-path :result)
+             result)))
 
 (rf/reg-event-db
  :search-and-command/on-change
