@@ -9,7 +9,7 @@
   (.on "find-word"
        (fn [event, word]
          (println word)
-         (rf/dispatch [:word-search/find
+         (rf/dispatch [:word-search/select
                        word
                        :definition
                        (.getTime (js/Date.))]))))

@@ -111,8 +111,8 @@ API로 이용할 수 있는 기능을 정의합니다
 {:query  "commun"
  :type   :definition
  :result [{:word "community"
-           :id   "커뮤니티"
-           :definition ""}]
+           :id   "qwd"
+           :definition "커뮤니티"}]
  :page 1}
 ```
 

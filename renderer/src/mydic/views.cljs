@@ -1,5 +1,7 @@
 (ns mydic.views
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [mydic.dict-api.core :as dict-api]
+            [clojure.string :as string]))
 
 (defn command-completion []
   "Add completion to search-and-command component")
@@ -8,33 +10,50 @@
 (defn search-and-command []
   "User can search words and execute command"
   [:input.search-and-command
-   {:type "text"
-    :value @(rf/subscribe [:search-and-command/text])
-    :on-change #(rf/dispatch [:search-and-command/on-change
-                              (-> % .-target .-value)])
+   {:type      "text"
+    :value     @(rf/subscribe [:search-and-command/text])
+    :on-change (fn [e]
+                 (let [content @(rf/subscribe [:route/content])
+                       prefix  (-> e .-target .-value)]
+                   (case content
+                     :word-search
+                     (if (not= prefix "")
+                       (dict-api/get-word-completion prefix)
+                       (rf/dispatch [:word-search.list/on-mode-change :history]))
+                     nil)
+                   (rf/dispatch
+                    [:search-and-command/on-change prefix])))
     :placeholder "search words or commands you want to execute"}])
 
-(defn word-history []
-  (let [word-hist @(rf/subscribe [:word-search/word-history])
-        word-sel @(rf/subscribe [:word-search/timestamp])]
-    [:div.word-history-container
-     [:ul.word-history-list
-      (for [{:keys [word timestamp]} word-hist]
-        ^{:key timestamp} [:li.btn.word-history-word
-                           {:class (if (= timestamp word-sel)
-                                     "word-selected")
-                            :on-click #(rf/dispatch
-                                        [:word-search/find-word-in-history
-                                         word
-                                         :definition
-                                         timestamp])}
-                           word])]]))
+(defn word-list []
+  (let [word-list         @(rf/subscribe [:word-search/list])
+        {:keys [mode
+                selected
+                result
+                completion
+                history]} word-list]
+    [:div.word-list-container
+     [:ul.word-list
+      (let [word-links (case mode
+                         :history    history
+                         :result     result
+                         :completion completion)]
+        (for [{:keys [word id]} word-links]
+          ^{:key id} [:li.btn.word-list-item
+                      {:class    (if (= id selected)
+                                   "word-selected")
+                       :on-click #(rf/dispatch
+                                   [:word-search/select-word-in-history
+                                    word
+                                    :definition
+                                    id])}
+                      word]))]]))
 
-(defn kr-mean[word]
+(defn kr-mean [word]
   [:div.kr-mean
    [:p {:style {:fontSize "29px"}} word]])
 
-(defn en-mean[word]
+(defn en-mean [word]
   [:div.en-mean
    [:p {:style {:fontSize "25px"}} word]])
 
@@ -52,7 +71,7 @@
    "11th example sentances",
    "12th example sentances",])
 
-(defn ex-sen[sen]
+(defn ex-sen [sen]
   [:div.ex-sen
    [:ul.ex-sen-list
     (for [sentence sen]
@@ -69,7 +88,7 @@
 
 (defn word-search []
   [:div.word-search
-   [#'word-history]
+   [#'word-list]
    [#'word-definition]])
 
 (defn content-view []

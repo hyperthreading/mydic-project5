@@ -22,13 +22,16 @@
    :usage true
    :related true})
 
-(defn api-capability
+(defn api-capability []
   caps)
 
 (defn completion->word-link
   [text]
-  (let [s (string/split text #"\|")]
-    {:word (second s)
+  (let [s    (string/split text #"\|")
+        word (second s)
+        def  (nth s 2)]
+    {:word       word
+     :id         word
      :definition (nth s 2)}))
 
 (defn parse-completion
