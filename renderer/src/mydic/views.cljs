@@ -6,7 +6,6 @@
 (defn command-completion []
   "Add completion to search-and-command component")
 
-
 (defn search-and-command []
   "User can search words and execute command"
   [:input.search-and-command
@@ -23,7 +22,31 @@
                      nil)
                    (rf/dispatch
                     [:search-and-command/on-change prefix])))
+    :on-key-down (fn [e]
+                   (->
+                    (case (.-key e)
+                      "ArrowUp"
+                      nil
+                      "ArrowDown"
+                      nil
+                      "Enter"
+                      (dict-api/search-word (-> e .-target .-value))
+                      true)
+                    (when-not
+                        (.preventDefault e))))
     :placeholder "search words or commands you want to execute"}])
+
+(defn handle-word-click
+  [{:keys [word id definition] :as word-link} mode]
+  (case mode
+    :history
+    (rf/dispatch
+     [:word-search/select-word-in-history word :definition id])
+    :completion
+    (dict-api/search-word word)
+    :result
+    (dict-api/get-word-summary word-link)))
+  
 
 (defn word-list []
   (let [word-list         @(rf/subscribe [:word-search/list])
@@ -40,18 +63,16 @@
                          :completion completion)]
         (for [{:keys [word
                       id
-                      definition]} word-links]
+                      definition] :as word-link} word-links]
           ^{:key id} [:li.btn.word-list-item
                       {:class    (if (= id selected)
                                    "word-selected")
-                       :on-click #(rf/dispatch
-                                   [:word-search/select-word-in-history
-                                    word
-                                    :definition
-                                    id])}
+                       :on-click (when-not (= id selected)
+                                   #(handle-word-click word-link mode))}
                       word
                       (if definition
-                        (list [:br]
+                        (list ^{:key 0} [:br]
+                              ^{:key definition}
                               [:span.word-small-definition
                                definition]))]))]]))
 

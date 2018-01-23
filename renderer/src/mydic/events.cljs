@@ -17,8 +17,12 @@
                     (assoc-in [:list :selected] id)
                     (cond-> add-to-history
                       (update-in [:list :history]
-                              #(conj % {:word word
-                                        :id   id}))))))))
+                                 #(conj (filter (fn [w]
+                                                  (not= (:id w)
+                                                        id))
+                                                %)
+                                        {:word word
+                                         :id   id}))))))))
 
 (rf/reg-event-db
  :word-search/select
@@ -34,7 +38,8 @@
 (rf/reg-event-db
  :word-search.list/on-mode-change
  (fn [db [_ mode]]
-   (assoc-in db [:mode]
+   (assoc-in db
+             (conj word-list-path :mode)
              mode)))
 
 (rf/reg-event-db

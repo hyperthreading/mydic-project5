@@ -31,5 +31,12 @@
 (defn search-word
   [query]
   (rf/dispatch [:word-search/start-search])
-  (go (let [result (<! (word-detailed-search query))]
-        (rf/dispatch [:word-search/on-search-result (:result result)]))))
+  (go (let [result            (<! (word-detailed-search query))
+            words             (:result result)
+            {:keys [word id]} (first words)]
+        (rf/dispatch [:word-search/on-search-result words])
+        (rf/dispatch [:word-search/select word :definition id]))))
+
+(defn get-word-summary
+  [{:keys [word definition id]}]
+  (rf/dispatch [:word-search/select word :definition id]))

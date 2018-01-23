@@ -94,7 +94,8 @@
     (map (fn [word]
            (let [title       (first (s/select word-link-selector word))
                  definitions (s/select word-def-selector-in-result word)]
-             {:word (->> (:content title)
+             {:word (->> title
+                         :content
                          (map extract-content)
                          flatten
                          string/join)
@@ -108,6 +109,18 @@
                                string/join)}))
          words)))
 
+(defn word-links-excluding-dupe
+  [links]
+  (loop [links links
+         acc   []]
+    (let [link (first links)]
+      (if (seq links)
+        (recur (filter #(not= (:id %)
+                              (:id link))
+                       links)
+               (conj acc link))
+        acc))))
+
 (defn word-detailed-search
   "Types are `:definition` `:usage` `:idioms`"
   [query type]
@@ -117,7 +130,9 @@
     (go (>! ch
             {:query  query
              :type   type
-             :result (word-links-from-search (<! (async-fetch url)))
+             :result (-> (<! (async-fetch url))
+                         word-links-from-search
+                         word-links-excluding-dupe)
              :page   page})
         (close! ch))
     ch))
