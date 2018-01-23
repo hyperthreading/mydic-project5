@@ -1,6 +1,6 @@
 # Word Definition API Layer Specification
 
-사전 API Layer의 요구 사항을 정리한 문서입니다.
+어학사전 API Layer의 요구 사항을 정리한 문서입니다.
 
 네이버, 다음 어학 사전 기준으로 작성하였으며, 후에 변경 사항이 있을 수 있습니다.
 
@@ -14,7 +14,8 @@ API로 이용할 수 있는 기능을 정의합니다
 
 ```clojure
 {:completion true
- :search-result true
+ :search true
+ :detailed-search true
  :definition true
  :usage true
  :related true}
@@ -81,7 +82,7 @@ API로 이용할 수 있는 기능을 정의합니다
 
 
 
-### word-search-result
+### word-search
 
 어떤 키워드에 대한 일반적인 검색 결과입니다.
 
@@ -100,17 +101,28 @@ API로 이용할 수 있는 기능을 정의합니다
                         :definition "코뮌"}]}}
 ```
 
-### word-detailed-search-result
+### word-detailed-search
 
-단어의 정의, 예문, 연관 단어 등 특정 결과에 대해 검색할 수 있습니다.
+단어의 정의, 예문, 연관 단어 등에 대해 검색할 수 있습니다.
 
 기본적으로 pagination을 지원합니다.
+
+```clojure
+{:query  "commun"
+ :type   :definition
+ :result [{:word "community"
+           :id   "커뮤니티"
+           :definition ""}]
+ :page 1}
+```
+
+
 
 ### word-summary
 
 어떤 단어에 대한 전반적인 정보와 자세한 정의를 나타냅니다.
 
-definition-summary는 포함되지 않을 수 있습니다.
+definition은 반드시 포함되어야 하지만, definition-summary는 포함되지 않을 수 있습니다.
 
 ```clojure
 {:word "exempt"
