@@ -14,15 +14,21 @@
         (when (= @last-word-comp (:query result))
           (rf/dispatch [:word-search/on-completion (:list result)])))))
 
-(defn search-word
+(defn get-word-summary
+  "word-link -> word-summary"
+  [{:keys [word definition id]}]
+  (go (let [result (<! (dict-api/word-summary id))]
+        (rf/dispatch [:word-search/on-receiving-definition result]))))
+
+(defn search-word-and-select
   [query]
   (rf/dispatch [:word-search/start-search])
   (go (let [result            (<! (dict-api/word-detailed-search query))
             words             (:result result)
-            {:keys [word id]} (first words)]
+            {:keys [word id] :as word-link} (first words)]
+        (rf/dispatch [:word-search/select word :definition id])
         (rf/dispatch [:word-search/on-search-result words])
-        (rf/dispatch [:word-search/select word :definition id]))))
+        (get-word-summary word-link))))
 
-(defn get-word-summary
-  [{:keys [word definition id]}]
-  (rf/dispatch [:word-search/select word :definition id]))
+
+

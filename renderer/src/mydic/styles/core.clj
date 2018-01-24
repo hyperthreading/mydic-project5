@@ -19,7 +19,21 @@
     {:transition ["color .15s ease-in-out"
                   "background-color .15s ease-in-out"]}]
 
-   [:input.search-and-command {:width (percent 100)}]
+   [:.commandbox
+    {:display "flex"}]
+   
+   [:input.search-and-command {:width (percent 90)}]
+
+   [:.mode-indicator
+    {:display          "inline-block"
+     :text-align       "center"
+     :width            (percent 8)
+     :min-width        (px 80)
+     :padding          "2px 0"
+     :margin-left      (px 4)
+     :color            "#fff"
+     :background-color "rgb(57, 153, 255)"
+     :border-radius    "0.25rem"}]
 
    [:.word-list-container
     {:display   "inline-block"
@@ -56,7 +70,7 @@
     [:&.word-selected:hover {:background-color dark-blue}]
 
     [:.word-small-definition
-     {:font-size "smaller"
+     {:font-size  "smaller"
       :word-break "break-word"}]]
 
    [:.word-selected
@@ -88,8 +102,19 @@
       :-webkit-box-shadow    "inset 0 0 6px rgba(0,0,0,0.3)"}]
     ["&::-webkit-scrollbar-thumb:window-inactive"
      {:background "rgba(0x60, 0x60, 0x60, 0.4)"}]] 
-   
 
+   [:.big-word
+    {:padding-right (px 8)
+     :font-size     "4vw"
+     :color         "#0000cd"}]
+   
+   [:.pronounce
+    {:padding-right (px 8)}]
+
+   [:.pronounce-play
+    {:vertical-align "text-bottom"
+     :padding-left   (px 4)}]
+   
    [:.kr-mean
     [:&:before
      {:border-top-width (px 3)
@@ -103,8 +128,17 @@
     {:font-size  (px 30)
      :word-break "break-all"}]
 
-
-
+   [:.mean-list
+    {:list-style     "none"
+     :font-size      (px 24)
+     :padding        0
+     :padding-bottom (px 8)
+     :margin         0
+     :overflow       "hidden"}
+    
+    [:li
+     {:float         "left"
+      :padding-right (px 16)}]]
 
    [:.en-mean
     [:&:before
@@ -130,7 +164,7 @@
 
    [:.ex-sen-list
     {:height              "100%"
-     :font-size           "20px"
+     :font-size           "16px"
      :list-style-type     "upper-roman"
      :list-style-position "initial"
      :list-style-image    "initial"}]))

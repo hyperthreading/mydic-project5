@@ -27,7 +27,7 @@ list modes are `:history` `:completion` `:result`
                                                :selected   nil
                                                :result     []
                                                :completion []
-                                               :history    word-history}
+                                               :history    '()}
                                       :word   "computer"
                                       :detail nil}}
    :search-and-command {:text ""}})

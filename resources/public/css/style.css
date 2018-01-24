@@ -6,8 +6,24 @@ body {
   transition: color .15s ease-in-out, background-color .15s ease-in-out;
 }
 
+.commandbox {
+  display: flex;
+}
+
 input.search-and-command {
-  width: 100%;
+  width: 90%;
+}
+
+.mode-indicator {
+  min-width: 80px;
+  width: 8%;
+  padding: 2px 0;
+  text-align: center;
+  margin-left: 4px;
+  background-color: rgb(57, 153, 255);
+  border-radius: 0.25rem;
+  display: inline-block;
+  color: #fff;
 }
 
 .word-list-container {
@@ -93,6 +109,21 @@ input.search-and-command {
   background: rgba(0x60, 0x60, 0x60, 0.4);
 }
 
+.big-word {
+  padding-right: 8px;
+  font-size: 4vw;
+  color: #0000cd;
+}
+
+.pronounce {
+  padding-right: 8px;
+}
+
+.pronounce-play {
+  vertical-align: text-bottom;
+  padding-left: 4px;
+}
+
 .kr-mean {
   font-size: 30px;
   word-break: break-all;
@@ -106,6 +137,20 @@ input.search-and-command {
   display: block;
   width: 100%;
   block-size: 10px;
+}
+
+.mean-list {
+  list-style: none;
+  font-size: 24px;
+  padding: 0;
+  padding-bottom: 8px;
+  margin: 0;
+  overflow: hidden;
+}
+
+.mean-list li {
+  float: left;
+  padding-right: 16px;
 }
 
 .en-mean {
@@ -138,7 +183,7 @@ input.search-and-command {
 
 .ex-sen-list {
   height: 100%;
-  font-size: 20px;
+  font-size: 16px;
   list-style-type: upper-roman;
   list-style-position: initial;
   list-style-image: initial;

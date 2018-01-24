@@ -2,7 +2,15 @@
   (:require [mydic.commands :as commands]
             [re-frame.core :as rf]
             [clojure.string :as string]))
-            
+
+(defn mode-indicator
+  []
+  [:div.mode-indicator
+   [:span (case @(rf/subscribe [:word-search.list/mode])
+            :history    "history"
+            :completion "completion"
+            :result     "result")]])
+
 (defn search-and-command []
   "User can search words and execute command"
   [:input.search-and-command
@@ -27,7 +35,7 @@
                       "ArrowDown"
                       nil
                       "Enter"
-                      (commands/search-word (-> e .-target .-value))
+                      (commands/search-word-and-select (-> e .-target .-value))
                       true)
                     (when-not
                         (.preventDefault e))))
@@ -37,12 +45,16 @@
   [{:keys [word id definition] :as word-link} mode]
   (case mode
     :history
-    (rf/dispatch
-     [:word-search/select-word-in-history word :definition id])
+    (do
+      (rf/dispatch
+       [:word-search/select-word-in-history word :definition id])
+      (commands/get-word-summary word-link))
     :completion
-    (commands/search-word word)
+    (commands/search-word-and-select word)
     :result
-    (commands/get-word-summary word-link)))
+    (do
+      (rf/dispatch [:word-search/select word :definition] id)
+      (commands/get-word-summary word-link))))
   
 
 (defn word-list []
@@ -73,34 +85,61 @@
                               [:span.word-small-definition
                                definition]))]))]]))
 
+(def sound-element (atom nil))
+
+(defn pronounce-handler
+  [audio-url]
+  (fn []
+    (when @sound-element
+      (.pause @sound-element))
+    (reset! sound-element (js/Audio. audio-url))
+    (.play @sound-element)))
+
+(defn word-pronounce
+  [{:keys [text sound-url]}]
+  [:span text
+   [:i.material-icons.pronounce-play
+    {:on-click (pronounce-handler sound-url)}
+    "play_arrows"]])
+
 (defn word-display
   [word pronounce]
   [:div
-   [:strong {:style {:fontSize "70px" :color "#0000cd"} } word]
-   [:span "US " (:us pronounce)]
-   [:span "UK " (:uk pronounce)]])
+   [:strong.big-word word]
+   [:div {:style {:display "inline-block"}}
+    [:span.pronounce "US " [#'word-pronounce (:us pronounce)]]
+    [:span.pronounce "UK " [#'word-pronounce (:uk pronounce)]]]])
 
-(defn kr-mean [word]
+(defn kr-mean [means]
   [:div.kr-mean
-   [:p {:style {:fontSize "29px"}} word]])
+   [:ul.mean-list
+    (map (fn [index mean]
+           [:li index ". " mean])
+         (range)
+         means)]])
 
 (defn en-mean [word]
   [:div.en-mean
    [:p {:style {:fontSize "25px"}} word]])
 
-(def ex-sentences
-  [{:text "Example Sentence"
-    :translation "안녕"}
-   {:text "Example Sentence"
-    :translation "안녕"}])
+(defn detailed-definitions
+  [definitions]
+  (let [def-groups (group-by :class definitions)]
+    [:div
+     (for [[class defs] def-groups]
+       [:div
+        [:strong class]
+        (for [{text :text} defs]
+          [:p text])])]))
 
 (defn ex-sen [sen]
   [:div.ex-sen
+   [:strong "예문"]
    [:ul.ex-sen-list
     (for [{:keys [text translation]} sen]
       [:li
-       [:p text]
-       [:p translation]])]])
+       [:p.usage-text text]
+       [:p.usage-trans translation]])]])
 
 
 (defn word-definition []
@@ -109,6 +148,8 @@
     [:div.word-definition
      [#'word-display aword (:pronounce detail)]
      [#'kr-mean (:definition-summary detail)]
+     [#'en-mean ""]
+     [#'detailed-definitions (:definition detail)]
      [#'ex-sen (:usage detail)]]))
 
 (defn word-search []
@@ -122,5 +163,7 @@
 
 (defn app []
   [:div.main
-   [#'search-and-command]
+   [:div.commandbox
+    [#'search-and-command]
+    [#'mode-indicator]]
    [#'content-view]])

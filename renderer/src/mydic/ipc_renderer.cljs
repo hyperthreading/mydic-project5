@@ -9,6 +9,6 @@
   (.removeAllListeners #js ["find-word"])
   (.on "find-word"
        (fn [event word]
-         (commands/search-word word))))
+         (commands/search-word-and-select word))))
          
   

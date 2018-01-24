@@ -6,10 +6,13 @@
  :init
  (fn [_ _] mydb/default-db))
 
+(def word-search-path
+  [:contents :word-search])
+
 (defn select-word [add-to-history]
   "Select word with specified result type and id"
   (fn [db [_ word type id]]
-   (update-in db [:contents :word-search]
+   (update-in db word-search-path
               (fn [word-search]
                 (-> word-search
                     (assoc :word word)
@@ -32,8 +35,15 @@
  :word-search/select-word-in-history
  (select-word false))
 
+(rf/reg-event-db
+ :word-search/on-receiving-definition
+ (fn [db [_ detail]]
+   (assoc-in db
+             (conj word-search-path :detail)
+             detail)))
+
 (def word-list-path
-  [:contents :word-search :list])
+  (conj word-search-path :list))
 
 (rf/reg-event-db
  :word-search.list/on-mode-change

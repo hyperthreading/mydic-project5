@@ -23,13 +23,22 @@
    :usage true
    :related true})
 
+;; to be replaced with something more efficient
+(def simple-cache (atom {}))
+
 (defn async-fetch
   [url]
-  (let [ch (async/chan)]
-    (-> (fetch url)
-        (.then #(.text %))
-        (.then #(go (>! ch %)
-                    (close! ch))))
+  (let [ch     (async/chan)
+        cached (get @simple-cache url)]
+    (if cached
+      (go (>! ch cached))
+      (-> (fetch url)
+          (.then #(.text %))
+          (.then #(go (swap! simple-cache
+                            (fn [cache]
+                              (assoc cache url %)))
+                      (>! ch %)
+                      (close! ch)))))
     ch))
 
 (defn api-capability []
@@ -89,6 +98,14 @@
     (map extract-content (:content element))
     element))
 
+(defn extract-text
+  "Simply pull out text from text using some transformation"
+  [element]
+  (->> element
+       extract-content
+       flatten
+       string/join))
+
 (defn word-links-from-search
   [html]
   (let [words (->> html h/parse h/as-hickory (s/select word-selector-in-result))]
@@ -138,84 +155,69 @@
         (close! ch))
     ch))
 
-;------------------------------------------------------
-
 (defn d2s [vec]
   (cond
     (string? vec) (list vec)
     (string? ((comp first :content) vec)) (list ((comp first :content) vec))
     :else
-      (for [v (:content vec)]
-        (cond
-          (string? v) v
-          (string? ((comp first :content) v))  ((comp first :content) v)
-          :else ((comp first :content first :content) v)))))
+    (for [v (:content vec)]
+      (cond
+        (string? v) v
+        (string? ((comp first :content) v))  ((comp first :content) v)
+        :else ((comp first :content first :content) v)))))
 
 (defn decoder [vecs]
   (filter #(not= "" %)
           (for [vec vecs] (apply str (map #(apply str %) (map d2s vec))))))
 
+(defn definition-reducer
+  [class defs elem]
+  (let [text (extract-text elem)]
+    (if (re-find #"\d+\." text)
+      (conj defs {:text '()
+                  :class class})
+      (conj (vec (drop-last defs))
+            (-> (last defs)
+                (update :text
+                        #(->> text
+                              string/trim
+                              (conj %)))
+                (assoc :class class))))))
 
-(defn word-def [site-htree]
-  (let  [class (map (comp first :content) (s/select (s/and (s/tag :strong)
-                                                     (s/class :tit_ex)) site-htree))
-         text (decoder (map :content (s/select (s/descendant
-                                                (s/and (s/tag :div)
-                                                       (s/class :fold_ex))
-                                                (s/and (s/tag :p)
-                                                       (s/class :desc_item)))
-                                      site-htree)))
-         usage (filter #(not= "" %)
-                (map
-                  (comp #(apply str %)
-                        #(map (fn [x] (str x " ")) %)
-                        #(filter string? %)
-                        #(map (comp first :content) %)
-                         :content)
-                  (s/select (s/descendant
-                             (s/and (s/tag :ul)
-                                   (s/class :item_example))
-                             s/first-child
-                             (s/and (s/tag :p)
-                                    (s/class :desc_ex)))
-                            site-htree)))
-         num (filter #(not= nil %)
-               (map
-                 (comp first :content) (s/select (s/and (s/tag :span)
-                                                  (s/class :num_item))
-                                        site-htree)))]
-
-   (if (not= (count text) (count num))
-     (def text (drop 1 text)))
-   (def c (atom 0))
-   (for [i (range (/ (count usage) 2))]
-     {:class (if (= (nth usage @c) "1.")
-                 (if (= @c 0) (nth class @c)
-                              (nth class (swap! c inc)))
-                 (nth class @c))
-      :text (nth text i)
-      :usage [{:text (nth usage (* 2 i))
-               :translation (nth usage (+ (* 2 i) 1))}]})))
-
+(defn word-def
+  [htree]
+  (let [classes (s/select (s/class :fold_ex) htree)]
+    (flatten
+     (for [class-wrap classes]
+       (let [class-name (->> class-wrap
+                             (s/select (s/class :tit_ex))
+                             first
+                             :content
+                             first)
+             defs (s/select (s/class :wrap_ex)
+                            class-wrap)]
+         (reduce (partial definition-reducer class-name)
+                 []
+                 defs))))))
 
 (defn word-pronounce [site-htree]
   (let [symbol (map
                 (comp first :content)
                 (s/select (s/and (s/tag :span)
-                                (s/class :txt_pronounce))
+                                 (s/class :txt_pronounce))
                           site-htree))
         pron-url (map
                   (comp :data-url :attrs)
                   (s/select (s/descendant
-                                  (s/and (s/tag :span)
-                                         (s/class :listen_voice))
-                                  (s/nth-child :even))
+                             (s/and (s/tag :span)
+                                    (s/class :listen_voice))
+                             (s/nth-child :even))
                             site-htree))]
-       {
-         :us {:text (first symbol)
-               :sound-url (first pron-url)}
-         :uk {:text (second symbol)
-               :sound-url (second pron-url)}}))
+    {
+     :us {:text (first symbol)
+          :sound-url (first pron-url)}
+     :uk {:text (second symbol)
+          :sound-url (second pron-url)}}))
 
 
 
@@ -300,32 +302,36 @@
 
 (defn word-usage [site-htree]
   (let [usage (map (comp #(apply str (map first (map d2s %)))
-                    :content) (s/select (s/and (s/tag :span)
-                                          (s/class :txt_ex)) site-htree))]
-      (for [i (range (/ (count usage) 2))]
-          {:text (nth usage (* 2 i))
-            :translation (nth usage (+ 1 (* 2 i)))})))
+                         :content) (s/select (s/and (s/tag :span)
+                                                    (s/class :txt_ex)) site-htree))]
+    (for [i (range (/ (count usage) 2))]
+      {:text        (nth usage (* 2 i))
+       :translation (nth usage (+ 1 (* 2 i)) nil)})))
 
+(defn extract-first-supid
+  [html-src]
+  (let [hick (-> html-src
+                 h/parse
+                 h/as-hickory)]
+    (-> (s/select (s/attr :data-supid) hick)
+        first
+        :attrs
+        :data-supid)))
 
-(defn word-summary
-  [wordid supid]
-  (let [url-sum (gstring/format (urls :detail/summary) wordid)
-        url-def (gstring/format (urls :detail/definition) wordid supid)]
-    (go (let [at-sum (<! (async-fetch url-sum))
-              at-def (<! (async-fetch url-def))
-              sum-htree (-> @url-sum h/parse h/as-hickory)
-              def-htree (-> @url-def h/parse h/as-hickory)]
-            {:word (word sum-htree)
-             :definition-summary (summary-def sum-htree)
-             :definition (word-def def-htree)
-             :pronounce (word-pronounce sum-htree)
-             :usage (word-usage sum-htree)
-             :idiom (word-idiom sum-htree)
-             :related (word-related sum-htree)}))))
-
-
-(defn word-usage
-  [])
-
-(defn word-related
-  [])
+(def word-summary
+  (memoize (fn
+             [wordid]
+             (let [url-sum (gstring/format (urls :detail/summary) wordid)]
+               (go (let [at-sum    (<! (async-fetch url-sum))
+                         supid     (extract-first-supid at-sum)
+                         url-def   (gstring/format (urls :detail/definition) wordid supid)
+                         at-def    (<! (async-fetch url-def))
+                         sum-htree (-> at-sum h/parse h/as-hickory)
+                         def-htree (-> at-def h/parse h/as-hickory)]
+                     {:word               (word sum-htree)
+                      :definition-summary (seq (summary-def sum-htree))
+                      :definition         (seq (word-def def-htree))
+                      :pronounce          (word-pronounce sum-htree)
+                      :usage              (seq (word-usage sum-htree))
+                      :idiom              (seq (word-idiom sum-htree))
+                      :related            (seq (word-related sum-htree))}))))))

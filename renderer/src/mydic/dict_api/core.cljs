@@ -17,3 +17,6 @@
   [query]
   (daum/word-detailed-search query :definition))
 
+(defn word-summary
+  [wordid]
+  (daum/word-summary wordid))
