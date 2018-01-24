@@ -1,5 +1,9 @@
 (ns mydic.views
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [hickory.core :as h]
+            [hickory.select :as s]
+            [clojure.string :as string]))
+
 
 (defn command-completion []
   "Add completion to search-and-command component")
@@ -29,6 +33,8 @@
                                          :definition
                                          timestamp])}
                            word])]]))
+
+
 
 (defn kr-mean[word]
   [:div.kr-mean
