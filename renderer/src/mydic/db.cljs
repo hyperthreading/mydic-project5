@@ -15,6 +15,8 @@ word-search types are `:definition` `:usage` `:idiom`
 list modes are `:history` `:completion` `:result`
 
 "
+(def word-def
+  {})
 
 (def default-db
   {:route              {:window  nil

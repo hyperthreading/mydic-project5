@@ -5,11 +5,9 @@
   :license {:name ""}
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.9.946"]
-
                  [org.clojure/core.async "0.4.474"]
                  [re-frame "0.10.3-rc2"]
                  [hickory "0.7.1"]]
-
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-figwheel "0.5.14"]
             [lein-garden "0.3.0"]]
@@ -26,13 +24,15 @@
                    ;; need to add the compliled assets to the :clean-targets
                    :clean-targets ^{:protect false} ["resources/public/js/compiled"
                                                      "resources/out"
+                                                     "resources/app/public/js/compiled"
+                                                     "resources/app/out"
                                                      :target-path]}}
 
   :garden
   {:builds [{:source-paths ["renderer/src"]
              :stylesheet mydic.styles.core/main-css
              :compiler {:output-to "resources/public/css/style.css"}}]}
-
+  
   :figwheel {:server-port 3450
              :css-dirs ["resources/public/css"]}
 
@@ -53,7 +53,7 @@
 
                         :figwheel
                         {:on-jsload "mydic.renderer/on-reload"}
-
+                        
                         :compiler {:main mydic.renderer
                                    :asset-path "js/compiled/out"
                                    :output-to "resources/public/js/compiled/renderer.js"
@@ -61,4 +61,20 @@
                                    :source-map-timestamp true
                                    ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
                                    ;; https://github.com/binaryage/cljs-devtools
-                                   :preloads [devtools.preload]}}]})
+                                   :preloads [devtools.preload]}}
+
+                       {:id "main-prod"
+                        :source-paths ["app/src"]
+                        :compiler {:output-to "resources/app/out/main.js"
+                                   :output-dir "resources/app/out"
+                                   :main mydic.main
+                                   :target :nodejs
+                                   :optimizations :simple}}
+
+                       {:id "renderer-prod"
+                        :source-paths ["renderer/src"]
+                        :compiler {:output-to "resources/app/public/js/compiled/renderer.js"
+                                   :output-dir "resources/app/public/js/compiled/out"
+                                   :asset-path "js/compiled/out"
+                                   :main mydic.renderer
+                                   :optimizations :simple}}]})

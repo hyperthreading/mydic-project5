@@ -1,20 +1,13 @@
 {
-  "name": "electron-quick-start",
-  "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "name": "dickens",
+  "productName": "Dickens",
+  "version": "0.1.1",
+  "description": "A simple dictionary",
   "main": "resources/out/main.js",
   "scripts": {
     "start": "electron ."
   },
-  "repository": "https://github.com/electron/electron-quick-start",
-  "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
-  ],
-  "author": "GitHub",
+  "author": "hyperthreading",
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "~1.7.8",
