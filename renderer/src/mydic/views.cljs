@@ -1,11 +1,8 @@
 (ns mydic.views
-  (:require [re-frame.core :as rf]
-            [mydic.dict-api.core :as dict-api]
+  (:require [mydic.commands :as commands]
+            [re-frame.core :as rf]
             [clojure.string :as string]))
-
-(defn command-completion []
-  "Add completion to search-and-command component")
-
+            
 (defn search-and-command []
   "User can search words and execute command"
   [:input.search-and-command
@@ -17,7 +14,7 @@
                    (case content
                      :word-search
                      (if (not= prefix "")
-                       (dict-api/get-word-completion prefix)
+                       (commands/get-word-completion prefix)
                        (rf/dispatch [:word-search.list/on-mode-change :history]))
                      nil)
                    (rf/dispatch
@@ -30,7 +27,7 @@
                       "ArrowDown"
                       nil
                       "Enter"
-                      (dict-api/search-word (-> e .-target .-value))
+                      (commands/search-word (-> e .-target .-value))
                       true)
                     (when-not
                         (.preventDefault e))))
@@ -43,9 +40,9 @@
     (rf/dispatch
      [:word-search/select-word-in-history word :definition id])
     :completion
-    (dict-api/search-word word)
+    (commands/search-word word)
     :result
-    (dict-api/get-word-summary word-link)))
+    (commands/get-word-summary word-link)))
   
 
 (defn word-list []
