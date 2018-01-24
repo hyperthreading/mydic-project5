@@ -28,17 +28,12 @@
 
 (defn async-fetch
   [url]
-  (let [ch     (async/chan)
-        cached (get @simple-cache url)]
-    (if cached
-      (go (>! ch cached))
-      (-> (fetch url)
-          (.then #(.text %))
-          (.then #(go (swap! simple-cache
-                            (fn [cache]
-                              (assoc cache url %)))
-                      (>! ch %)
-                      (close! ch)))))
+  (let [ch     (async/chan)]
+    (-> (fetch url)
+        ;; Warning:: mutation occurs since it is stream
+        (.then #(.text %))
+        (.then #(go (>! ch %)
+                    (close! ch))))
     ch))
 
 (defn api-capability []
@@ -202,7 +197,7 @@
 
 (defn word-pronounce [site-htree]
   (let [symbol (map
-                (comp first :content)
+                extract-text
                 (s/select (s/and (s/tag :span)
                                  (s/class :txt_pronounce))
                           site-htree))
@@ -233,8 +228,9 @@
                              x
                              ((comp first :content) x))) %)
              :content)
-            (s/select (s/and (s/tag :span)
-                             (s/class :txt_mean)) site-htree))))
+            (s/select (s/descendant (s/class :detail_top)
+                                    (s/and (s/tag :span)
+                                           (s/class :txt_mean))) site-htree))))
 
 (defn word-related [site-htree]
   (let [word (map
@@ -318,20 +314,28 @@
         :attrs
         :data-supid)))
 
-(def word-summary
-  (memoize (fn
-             [wordid]
-             (let [url-sum (gstring/format (urls :detail/summary) wordid)]
-               (go (let [at-sum    (<! (async-fetch url-sum))
-                         supid     (extract-first-supid at-sum)
-                         url-def   (gstring/format (urls :detail/definition) wordid supid)
-                         at-def    (<! (async-fetch url-def))
-                         sum-htree (-> at-sum h/parse h/as-hickory)
-                         def-htree (-> at-def h/parse h/as-hickory)]
-                     {:word               (word sum-htree)
-                      :definition-summary (seq (summary-def sum-htree))
-                      :definition         (seq (word-def def-htree))
-                      :pronounce          (word-pronounce sum-htree)
-                      :usage              (seq (word-usage sum-htree))
-                      :idiom              (seq (word-idiom sum-htree))
-                      :related            (seq (word-related sum-htree))}))))))
+(def word-summary-naive-cache (atom {}))
+
+(defn word-summary
+  [wordid]
+  (let [cached (get @word-summary-naive-cache wordid)]
+    (if cached
+      (go cached)
+      (let [url-sum (gstring/format (urls :detail/summary) wordid)]
+        (go (let [at-sum    (<! (async-fetch url-sum))
+                  supid     (extract-first-supid at-sum)
+                  url-def   (gstring/format (urls :detail/definition) wordid supid)
+                  at-def    (<! (async-fetch url-def))
+                  sum-htree (-> at-sum h/parse h/as-hickory)
+                  def-htree (-> at-def h/parse h/as-hickory)
+                  result {:word               (word sum-htree)
+                          :definition-summary (seq (summary-def sum-htree))
+                          :definition         (seq (word-def def-htree))
+                          :pronounce          (word-pronounce sum-htree)
+                          :usage              (seq (word-usage sum-htree))
+                          :idiom              (seq (word-idiom sum-htree))
+                          :related            (seq (word-related sum-htree))}]
+              (swap! word-summary-naive-cache
+                     #(assoc % wordid result))
+              result))))))
+

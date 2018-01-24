@@ -26,6 +26,10 @@ input.search-and-command {
   color: #fff;
 }
 
+.mode-indicator.no-result {
+  background-color: #c82333;
+}
+
 .word-list-container {
   display: inline-block;
   width: 20%;
@@ -153,11 +157,11 @@ input.search-and-command {
   padding-right: 16px;
 }
 
-.en-mean {
+.detail-def-cont {
   word-break: break-all;
 }
 
-.en-mean:before {
+.detail-def-cont:before {
   border-top-width: 3px;
   border-top-style: solid;
   border-top-color: rgb(63, 135, 166);
@@ -165,6 +169,10 @@ input.search-and-command {
   display: block;
   width: 100%;
   block-size: 10px;
+}
+
+.detail-def {
+  padding-left: 16px;
 }
 
 .ex-sen {

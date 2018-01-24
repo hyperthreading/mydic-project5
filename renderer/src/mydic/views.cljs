@@ -5,11 +5,17 @@
 
 (defn mode-indicator
   []
-  [:div.mode-indicator
-   [:span (case @(rf/subscribe [:word-search.list/mode])
-            :history    "history"
-            :completion "completion"
-            :result     "result")]])
+  (let [mode @(rf/subscribe [:word-search.list/mode])
+        result @(rf/subscribe [:word-search/result])]
+    [:div.mode-indicator
+     {:class (when (= mode
+                      :result)
+               (if-not (seq result)
+                 "no-result"))}
+     [:span (case mode
+              :history    "history"
+              :completion "completion"
+              :result     "result")]]))
 
 (defn search-and-command []
   "User can search words and execute command"
@@ -53,7 +59,7 @@
     (commands/search-word-and-select word)
     :result
     (do
-      (rf/dispatch [:word-search/select word :definition] id)
+      (rf/dispatch [:word-search/select word :definition id])
       (commands/get-word-summary word-link))))
   
 
@@ -96,25 +102,29 @@
     (.play @sound-element)))
 
 (defn word-pronounce
-  [{:keys [text sound-url]}]
-  [:span text
-   [:i.material-icons.pronounce-play
-    {:on-click (pronounce-handler sound-url)}
-    "play_arrows"]])
+  [prefix {:keys [text sound-url]}]
+  (when text
+    [:span.pronounce
+     prefix
+     text
+     (when sound-url
+       [:i.material-icons.pronounce-play
+        {:on-click (pronounce-handler sound-url)}
+        "play_arrows"])]))
 
 (defn word-display
   [word pronounce]
   [:div
    [:strong.big-word word]
    [:div {:style {:display "inline-block"}}
-    [:span.pronounce "US " [#'word-pronounce (:us pronounce)]]
-    [:span.pronounce "UK " [#'word-pronounce (:uk pronounce)]]]])
+    [#'word-pronounce "US " (:us pronounce)]
+    [#'word-pronounce "UK " (:uk pronounce)]]])
 
 (defn kr-mean [means]
   [:div.kr-mean
    [:ul.mean-list
     (map (fn [index mean]
-           [:li index ". " mean])
+           ^{:key mean} [:li index ". " mean])
          (range)
          means)]])
 
@@ -125,18 +135,21 @@
 (defn detailed-definitions
   [definitions]
   (let [def-groups (group-by :class definitions)]
-    [:div
+    [:div.detail-def-cont
      (for [[class defs] def-groups]
+       ^{:key defs}
        [:div
+        ^{:key class}
         [:strong class]
         (for [{text :text} defs]
-          [:p text])])]))
+          ^{:key text} [:p.detail-def text])])]))
 
-(defn ex-sen [sen]
+(defn ex-sen [sentences]
   [:div.ex-sen
    [:strong "예문"]
    [:ul.ex-sen-list
-    (for [{:keys [text translation]} sen]
+    (for [{:keys [text translation] :as sen} sentences]
+      ^{:key sen}
       [:li
        [:p.usage-text text]
        [:p.usage-trans translation]])]])
@@ -148,7 +161,6 @@
     [:div.word-definition
      [#'word-display aword (:pronounce detail)]
      [#'kr-mean (:definition-summary detail)]
-     [#'en-mean ""]
      [#'detailed-definitions (:definition detail)]
      [#'ex-sen (:usage detail)]]))
 

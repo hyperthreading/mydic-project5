@@ -26,9 +26,12 @@
   (go (let [result            (<! (dict-api/word-detailed-search query))
             words             (:result result)
             {:keys [word id] :as word-link} (first words)]
-        (rf/dispatch [:word-search/select word :definition id])
-        (rf/dispatch [:word-search/on-search-result words])
-        (get-word-summary word-link))))
+        (when (seq words)
+          (rf/dispatch [:word-search/select word :definition id])
+          (get-word-summary word-link))
+        (rf/dispatch [:word-search/on-search-result words]))))
 
 
 
+
+  

@@ -33,7 +33,9 @@
      :margin-left      (px 4)
      :color            "#fff"
      :background-color "rgb(57, 153, 255)"
-     :border-radius    "0.25rem"}]
+     :border-radius    "0.25rem"}
+    [:&.no-result
+     {:background-color "#c82333"}]]
 
    [:.word-list-container
     {:display   "inline-block"
@@ -140,7 +142,7 @@
      {:float         "left"
       :padding-right (px 16)}]]
 
-   [:.en-mean
+   [:.detail-def-cont
     [:&:before
      {:border-top-width (px 3)
       :border-top-style "solid"
@@ -150,6 +152,9 @@
       :width            "100%"
       :block-size       (px 10)}]
     { :word-break "break-all"}]
+
+   [:.detail-def
+    {:padding-left (px 16)}]
 
    [:.ex-sen
     [:&:before

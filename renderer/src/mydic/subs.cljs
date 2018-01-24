@@ -20,7 +20,11 @@
  :word-search.list/mode
  (fn [db _]
    (get-in db [:contents :word-search :list :mode])))
- 
+
+(rf/reg-sub
+ :word-search/result
+ (fn [db _]
+   (get-in db [:contents :word-search :list :result]))) 
 
 (rf/reg-sub
  :word-search/word
