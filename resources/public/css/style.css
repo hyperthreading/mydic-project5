@@ -10,7 +10,7 @@ input.search-and-command {
   width: 100%;
 }
 
-.word-history-container {
+.word-list-container {
   display: inline-block;
   width: 20%;
   min-width: 75px;
@@ -21,7 +21,7 @@ input.search-and-command {
   left: 0;
 }
 
-.word-history-list {
+.word-list {
   width: 100%;
   height: 100%;
   padding: 0;
@@ -29,27 +29,36 @@ input.search-and-command {
   overflow-y: scroll;
 }
 
-.word-history-list::-webkit-scrollbar {
+.word-list::-webkit-scrollbar {
   display: none;
 }
 
-.word-history-word {
+.word-list-item {
   padding: 10px;
   border-bottom: 1px solid #ededed;
   box-shadow: inset 0 -2px 1px rgba(0,0,0,0.03);
 }
 
-.word-history-word:hover {
+.word-list-item:hover {
   color: #212529;
   background-color: #e2e6ea;
 }
 
-.word-history-word.word-selected:hover {
+.word-list-item.word-selected:hover {
   background-color: #4198f6;
+}
+
+.word-list-item .word-small-definition {
+  font-size: smaller;
+  word-break: break-word;
 }
 
 .word-selected {
   background-color: #81beff;
+}
+
+.word-match {
+  font-weight: 600;
 }
 
 .word-definition {

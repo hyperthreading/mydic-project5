@@ -4,6 +4,7 @@
             [mydic.events]
             [mydic.subs]
             [mydic.ipc-renderer]
+            [mydic.dict-api.core]
             [reagent.core :as reagent]
             [re-frame.core :as rf]
             [re-frame.db :as rfdb]))
@@ -29,3 +30,5 @@
   (run))
 
 (enable-console-print!)
+
+(def log (.log js/console))
