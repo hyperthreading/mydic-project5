@@ -138,7 +138,7 @@
     ch))
 
 (defn word-summary
-  [])
+  [word-id])
 
 (defn word-usage
   [])

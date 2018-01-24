@@ -46,6 +46,14 @@
                                    :optimizations :none
                                    :source-map true}}
 
+                       {:id "main-prod"
+                        :source-paths ["app/src"]
+                        :compiler {:output-to "resources/out/main.js"
+                                   :output-dir "resources/out"
+                                   :main mydic.main
+                                   :target :nodejs
+                                   :optimizations :advanced}}
+                       
                        {:id "renderer-dev"
                         :source-paths ["renderer/src"]
 
@@ -59,4 +67,9 @@
                                    :source-map-timestamp true
                                    ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
                                    ;; https://github.com/binaryage/cljs-devtools
-                                   :preloads [devtools.preload]}}]})
+                                   :preloads [devtools.preload]}}
+
+                       {:id "renderer-prod"
+                        :source-paths ["renderer/src"]
+                        :compiler {n mydic.renderer
+                                   :optimizations :advanced}}]})

@@ -36,7 +36,7 @@
                (-> @*win*
                    (.-webContents)
                    (.send "find-word" (.readText clipboard)))
-               (println (.readText clipboard))
+               (.readText clipboard)
                (.show @*win*))))
                
 
