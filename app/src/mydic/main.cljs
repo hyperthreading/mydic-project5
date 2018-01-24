@@ -26,8 +26,8 @@
                                  :slashes true}))]
     (.loadURL @*win* u))
   (.openDevTools (.-webContents @*win*))
-  (.on app "closed" (fn [] (reset! *win* nil)))j)
-  
+  (.on app "closed" (fn [] (reset! *win* nil))))
+
 
 (defn register-global-shortcut []
   (.register globalShortcut
@@ -38,7 +38,7 @@
                    (.send "find-word" (.readText clipboard)))
                (println (.readText clipboard))
                (.show @*win*))))
-               
+
 
 (defn unregister-global-shortcut []
   (.unregister globalShortcut "CommandOrControl+F1")
@@ -55,7 +55,7 @@
                    (create-window)
                    (reset! visible true)
                    (register-global-shortcut)))
-                   
+
     (.on "window-all-closed"
          (fn [] (when-not darwin? (.quit app))))
 
@@ -68,4 +68,3 @@
 (nodejs/enable-util-print!)
 (.log js/console "App has started!")
 (set! *main-cli-fn* -main)
-
