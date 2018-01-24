@@ -5,9 +5,11 @@
   :license {:name ""}
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.9.946"]
+
                  [org.clojure/core.async "0.4.474"]
                  [re-frame "0.10.3-rc2"]
                  [hickory "0.7.1"]]
+
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-figwheel "0.5.14"]
             [lein-garden "0.3.0"]]
@@ -30,7 +32,7 @@
   {:builds [{:source-paths ["renderer/src"]
              :stylesheet mydic.styles.core/main-css
              :compiler {:output-to "resources/public/css/style.css"}}]}
-  
+
   :figwheel {:server-port 3450
              :css-dirs ["resources/public/css"]}
 
@@ -59,7 +61,7 @@
 
                         :figwheel
                         {:on-jsload "mydic.renderer/on-reload"}
-                        
+
                         :compiler {:main mydic.renderer
                                    :asset-path "js/compiled/out"
                                    :output-to "resources/public/js/compiled/renderer.js"
