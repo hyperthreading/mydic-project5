@@ -1,25 +1,173 @@
-(ns mydic.views)
+(ns mydic.views
+  (:require [mydic.commands :as commands]
+            [re-frame.core :as rf]
+            [clojure.string :as string]))
 
-(defn command-completion []
-  "Add completion to search-and-command component"
-  )
+(defn mode-indicator
+  []
+  (let [mode @(rf/subscribe [:word-search.list/mode])
+        result @(rf/subscribe [:word-search/result])]
+    [:div.mode-indicator
+     {:class (when (= mode
+                      :result)
+               (if-not (seq result)
+                 "no-result"))}
+     [:span (case mode
+              :history    "history"
+              :completion "completion"
+              :result     "result")]]))
 
 (defn search-and-command []
   "User can search words and execute command"
-  [:input.search-and-command {:type "text"
-           :value "search words or commands you want to execute"}])
+  [:input.search-and-command
+   {:type      "text"
+    :value     @(rf/subscribe [:search-and-command/text])
+    :on-change (fn [e]
+                 (let [content @(rf/subscribe [:route/content])
+                       prefix  (-> e .-target .-value)]
+                   (case content
+                     :word-search
+                     (if (not= prefix "")
+                       (commands/get-word-completion prefix)
+                       (rf/dispatch [:word-search.list/on-mode-change :history]))
+                     nil)
+                   (rf/dispatch
+                    [:search-and-command/on-change prefix])))
+    :on-key-down (fn [e]
+                   (->
+                    (case (.-key e)
+                      "ArrowUp"
+                      nil
+                      "ArrowDown"
+                      nil
+                      "Enter"
+                      (commands/search-word-and-select (-> e .-target .-value))
+                      true)
+                    (when-not
+                        (.preventDefault e))))
+    :placeholder "search words or commands you want to execute"}])
 
-(defn word-history [{words :words}]
-  [:ul.word-history (for [word words]
-                      ^{:key word} [:li.word-history-word word])])
+(defn handle-word-click
+  [{:keys [word id definition] :as word-link} mode]
+  (case mode
+    :history
+    (do
+      (rf/dispatch
+       [:word-search/select-word-in-history word :definition id])
+      (commands/get-word-summary word-link))
+    :completion
+    (commands/search-word-and-select word)
+    :result
+    (do
+      (rf/dispatch [:word-search/select word :definition id])
+      (commands/get-word-summary word-link))))
+  
 
-(defn word-definition [{word :word}]
-  [:div.word-definition "I really need to find " [:strong word]])
+(defn word-list []
+  (let [word-list         @(rf/subscribe [:word-search/list])
+        {:keys [mode
+                selected
+                result
+                completion
+                history]} word-list]
+    [:div.word-list-container
+     [:ul.word-list
+      (let [word-links (case mode
+                         :history    history
+                         :result     result
+                         :completion completion)]
+        (for [{:keys [word
+                      id
+                      definition] :as word-link} word-links]
+          ^{:key id} [:li.btn.word-list-item
+                      {:class    (if (= id selected)
+                                   "word-selected")
+                       :on-click (when-not (= id selected)
+                                   #(handle-word-click word-link mode))}
+                      word
+                      (if definition
+                        (list ^{:key 0} [:br]
+                              ^{:key definition}
+                              [:span.word-small-definition
+                               definition]))]))]]))
+
+(def sound-element (atom nil))
+
+(defn pronounce-handler
+  [audio-url]
+  (fn []
+    (when @sound-element
+      (.pause @sound-element))
+    (reset! sound-element (js/Audio. audio-url))
+    (.play @sound-element)))
+
+(defn word-pronounce
+  [prefix {:keys [text sound-url]}]
+  (when text
+    [:span.pronounce
+     prefix
+     text
+     (when sound-url
+       [:i.material-icons.pronounce-play
+        {:on-click (pronounce-handler sound-url)}
+        "play_arrows"])]))
+
+(defn word-display
+  [word pronounce]
+  [:div
+   [:strong.big-word word]
+   [:div {:style {:display "inline-block"}}
+    [#'word-pronounce "US " (:us pronounce)]
+    [#'word-pronounce "UK " (:uk pronounce)]]])
+
+(defn kr-mean [means]
+  [:div.kr-mean
+   [:ul.mean-list
+    (map (fn [index mean]
+           ^{:key mean} [:li index ". " mean])
+         (range)
+         means)]])
+
+(defn en-mean [word]
+  [:div.en-mean
+   [:p {:style {:fontSize "25px"}} word]])
+
+(defn detailed-definitions
+  [definitions]
+  (let [def-groups (group-by :class definitions)]
+    [:div.detail-def-cont
+     (for [[class defs] def-groups]
+       ^{:key defs}
+       [:div
+        ^{:key class}
+        [:strong class]
+        (for [{text :text} defs]
+          ^{:key text} [:p.detail-def text])])]))
+
+(defn ex-sen [sentences]
+  [:div.ex-sen
+   [:strong "예문"]
+   [:ul.ex-sen-list
+    (for [{:keys [text translation] :as sen} sentences]
+      ^{:key sen}
+      [:li
+       [:p.usage-text text]
+       [:p.usage-trans translation]])]])
+
+
+(defn word-definition []
+  (let [aword  @(rf/subscribe [:word-search/word])
+        detail @(rf/subscribe [:word-search/detail])]
+    [:div.word-definition
+     [#'word-display aword (:pronounce detail)]
+     [#'kr-mean (:definition-summary detail)]
+     [#'detailed-definitions (:definition detail)]
+     [#'ex-sen (:usage detail)]]))
 
 (defn word-search []
   [:div.word-search
-   [#'word-history {:words ["pig" "lion" "tiger" "anteater"]}]
-   [#'word-definition {:word "computer"}]])
+   [#'word-list]
+   [#'word-definition]])
 
 (defn content-view []
   "Select appropriate content according to the current state"
@@ -27,5 +175,7 @@
 
 (defn app []
   [:div.main
-   [#'search-and-command]
+   [:div.commandbox
+    [#'search-and-command]
+    [#'mode-indicator]]
    [#'content-view]])
