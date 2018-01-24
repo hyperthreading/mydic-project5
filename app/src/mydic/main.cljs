@@ -9,6 +9,14 @@
 (def clipboard (.-clipboard Electron))
 (def path (nodejs/require "path"))
 (def url (nodejs/require "url"))
+(def fs (nodejs/require "fs"))
+(def config
+  (-> fs
+      (.readFileSync (.join path
+                            (.resolve path ".")
+                            "config.json"))
+      js/JSON.parse
+      js->clj))
 
 (defonce *win* (atom nil))
 (def visible (atom nil))
@@ -18,20 +26,20 @@
 (defn create-window []
   (reset! *win* (BrowserWindow. (clj->js {:width 800 :height 600})))
   (let [u (.format url (clj->js {:pathname (.join path
-                                                  (js* "__dirname")
-                                                  "../../"
+                                                  (.resolve path ".")
+                                                  "resources"
                                                   "public"
                                                   "index.html")
                                  :protocol "file:"
                                  :slashes true}))]
     (.loadURL @*win* u))
-  (.openDevTools (.-webContents @*win*))
   (.on app "closed" (fn [] (reset! *win* nil))))
 
 
 (defn register-global-shortcut []
   (.register globalShortcut
-             "CommandOrControl+F1"
+             (or (get-in config ["keymap" "global-search-shortcut"])
+                 "CommandOrControl+F1")
              (fn []
                (-> @*win*
                    (.-webContents)

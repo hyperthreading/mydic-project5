@@ -73,6 +73,13 @@
                               [:span.word-small-definition
                                definition]))]))]]))
 
+(defn word-display
+  [word pronounce]
+  [:div
+   [:strong {:style {:fontSize "70px" :color "#0000cd"} } word]
+   [:span "US " (:us pronounce)]
+   [:span "UK " (:uk pronounce)]])
+
 (defn kr-mean [word]
   [:div.kr-mean
    [:p {:style {:fontSize "29px"}} word]])
@@ -82,33 +89,27 @@
    [:p {:style {:fontSize "25px"}} word]])
 
 (def ex-sentences
-  ["1st example sentances",
-   "2nd example sentances",
-   "3rd example sentances",
-   "4th example sentances",
-   "5th example sentances",
-   "6th example sentances",
-   "7th example sentances",
-   "8th example sentances",
-   "9th example sentances",
-   "10th example sentances",
-   "11th example sentances",
-   "12th example sentances",])
+  [{:text "Example Sentence"
+    :translation "안녕"}
+   {:text "Example Sentence"
+    :translation "안녕"}])
 
 (defn ex-sen [sen]
   [:div.ex-sen
    [:ul.ex-sen-list
-    (for [sentence sen]
-      [:li sentence])]])
+    (for [{:keys [text translation]} sen]
+      [:li
+       [:p text]
+       [:p translation]])]])
 
 
 (defn word-definition []
-  (let [aword @(rf/subscribe [:word-search/word])]
+  (let [aword  @(rf/subscribe [:word-search/word])
+        detail @(rf/subscribe [:word-search/detail])]
     [:div.word-definition
-     [:strong {:style {:fontSize "70px" :color "#0000cd"} } aword]
-     [kr-mean "한글 뜻!"]
-     [en-mean "english mean"]
-     [ex-sen ex-sentences]]))
+     [#'word-display aword (:pronounce detail)]
+     [#'kr-mean (:definition-summary detail)]
+     [#'ex-sen (:usage detail)]]))
 
 (defn word-search []
   [:div.word-search

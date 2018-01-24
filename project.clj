@@ -24,6 +24,8 @@
                    ;; need to add the compliled assets to the :clean-targets
                    :clean-targets ^{:protect false} ["resources/public/js/compiled"
                                                      "resources/out"
+                                                     "resources/app/public/js/compiled"
+                                                     "resources/app/out"
                                                      :target-path]}}
 
   :garden
@@ -46,14 +48,6 @@
                                    :optimizations :none
                                    :source-map true}}
 
-                       {:id "main-prod"
-                        :source-paths ["app/src"]
-                        :compiler {:output-to "resources/out/main.js"
-                                   :output-dir "resources/out"
-                                   :main mydic.main
-                                   :target :nodejs
-                                   :optimizations :advanced}}
-                       
                        {:id "renderer-dev"
                         :source-paths ["renderer/src"]
 
@@ -69,9 +63,18 @@
                                    ;; https://github.com/binaryage/cljs-devtools
                                    :preloads [devtools.preload]}}
 
+                       {:id "main-prod"
+                        :source-paths ["app/src"]
+                        :compiler {:output-to "resources/app/out/main.js"
+                                   :output-dir "resources/app/out"
+                                   :main mydic.main
+                                   :target :nodejs
+                                   :optimizations :simple}}
+
                        {:id "renderer-prod"
                         :source-paths ["renderer/src"]
-                        :compiler {:output-to "resources/public/js/compiled/renderer.js"
-                                   :output-dir "resources/public/js/compiled/out"
+                        :compiler {:output-to "resources/app/public/js/compiled/renderer.js"
+                                   :output-dir "resources/app/public/js/compiled/out"
+                                   :asset-path "js/compiled/out"
                                    :main mydic.renderer
-                                   :optimizations :advanced}}]})
+                                   :optimizations :simple}}]})
