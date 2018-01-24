@@ -126,46 +126,139 @@ word-definition(daum = http://alldic.daum.net/word/view_supword.do?wordid=ekw000
 ;유의어 찾기 (영어)
 (map
   (comp first :content)
-  (s/select (s/and (s/tag :a)
-                   (s/class :txt_emph1))
+  (s/select (s/descendant
+             (s/id :SIMILAR_WORD)
+             (s/and (s/tag :a)
+                   (s/class :txt_emph1)))
             site-htree))    
+;복합어 찾기 (영어)
+(map
+  (comp first :content)
+  (s/select (s/descendant
+             (s/id :INCLUDE_WORD)
+             (s/and (s/tag :a)
+                   (s/class :txt_emph1)))
+            site-htree))
 ;유의어 찾기 (뜻)
 (map
   (comp #(apply str %)
         #(map (fn [x] (if (string? x)
                      x
                      ((comp first :content) x))) %))
-  (map :content (s/select (s/and (s/tag :span)
+  (map :content (s/select (s/descendant
+                           (s/id :SIMILAR_WORD)
+                           (s/and (s/tag :span)
                                  (s/class :mean_info))
-          site-htree)))      
+                           )
+          site-htree)))
+;복합어 찾기 (뜻)
+(map
+  (comp #(apply str %)
+        #(map (fn [x] (if (string? x)
+                     x
+                     ((comp first :content) x))) %))
+  (map :content (s/select (s/descendant
+                           (s/id :INCLUDE_WORD)
+                           (s/and (s/tag :span)
+                                 (s/class :mean_info))
+                           )
+          site-htree)))
 ;유의어 찾기 (링크) -앞에 alldic.daum.net 붙여야함
 (map
   (comp :href :attrs)
-  (s/select (s/and (s/tag :a)
+  (s/select (s/descendant
+             (s/id :SIMILAR_WORD)
+             (s/and (s/tag :a)
                    (s/class :txt_emph1))
+             )
          site-htree))
+;복합어 찾기 (링크)
+(map
+ (comp :href :attrs)
+ (s/select (s/descendant
+            (s/id :INCLUDE_WORD)
+            (s/and (s/tag :a)
+                  (s/class :txt_emph1))
+            )
+        site-htree))
 
 (defn word-related [site-htree]
   (let [word (map
     (comp first :content)
-    (s/select (s/and (s/tag :a)
-                     (s/class :txt_emph1))
-              site-htree))   
+    (s/select (s/descendant
+               (s/id :SIMILAR_WORD)
+               (s/and (s/tag :a)
+                     (s/class :txt_emph1)))
+              site-htree))    
         url (map
           (comp :href :attrs)
-          (s/select (s/and (s/tag :a)
+          (s/select (s/descendant
+                     (s/id :SIMILAR_WORD)
+                     (s/and (s/tag :a)
                            (s/class :txt_emph1))
+                     )
                  site-htree))
         mean (map
           (comp #(apply str %)
                 #(map (fn [x] (if (string? x)
                              x
                              ((comp first :content) x))) %))
-          (map :content (s/select (s/and (s/tag :span)
+          (map :content (s/select (s/descendant
+                                   (s/id :SIMILAR_WORD)
+                                   (s/and (s/tag :span)
                                          (s/class :mean_info))
-                  site-htree)))]
+                                   )
+                  site-htree))) ]
   (for [i (range (count word))]
     {:word (nth word i)
       :id (nth url i)
       :definition (nth mean i)})))
+
+
+(defn word-idiom [site-htree]
+  (let [word (map
+    (comp first :content)
+    (s/select (s/descendant
+               (s/id :INCLUDE_WORD)
+               (s/and (s/tag :a)
+                     (s/class :txt_emph1)))
+              site-htree))    
+        url (map
+          (comp :href :attrs)
+          (s/select (s/descendant
+                     (s/id :INCLUDE_WORD)
+                     (s/and (s/tag :a)
+                           (s/class :txt_emph1))
+                     )
+                 site-htree))
+        mean (map
+          (comp #(apply str %)
+                #(map (fn [x] (if (string? x)
+                             x
+                             ((comp first :content) x))) %))
+          (map :content (s/select (s/descendant
+                                   (s/id :INCLUDE_WORD)
+                                   (s/and (s/tag :span)
+                                         (s/class :mean_info))
+                                   )
+                  site-htree))) ]
+  (for [i (range (count word))]
+    {:word (nth word i)
+      :id (nth url i)
+      :definition (nth mean i)})))
+
+(map (comp  
+         #(apply str (map first (map d2s %)))
+         :content)
+    (s/select (s/and (s/tag :span)
+                (s/class :txt_ex)) site-htree))
+(defn word-usage [site-htree]
+  (let [usage (map (comp  
+           #(apply str (map first (map d2s %)))
+           :content)
+      (s/select (s/and (s/tag :span)
+                  (s/class :txt_ex)) site-htree))]
+  (for [i (range (/ (count usage) 2))]
+      {:text (nth usage (* 2 i))
+        :translation (nth usage (+ 1 (* 2 i)))})))
 ```
